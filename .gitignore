@@ -1,0 +1,26 @@
+# Bytecode and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+
+# Virtual environment folders
+venv/
+env/
+.venv/
+.assistant-venv/
+assistant-venv/
+
+# Local configuration / secrets files
+.env
+
+# ===========================
+# IDE / Editor
+# ===========================
+.vscode/
+.idea/
+*.swp
+
+# Log files
+*.log

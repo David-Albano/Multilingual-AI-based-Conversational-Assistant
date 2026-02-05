@@ -1,5 +1,5 @@
 import time, whisper
-from audio_transcription import record_audio, get_transcription
+from audio_transcription import record_audio, get_transcription, get_slower_transcription
 from load_env import get_openai_client
 from answer_tts_play import speak
 from faster_whisper import WhisperModel
@@ -9,7 +9,7 @@ client = get_openai_client()
 
 FASTER_WHISPER_FLAG = True
 TRANSCRIPTION_FLAG = True
-MODEL_USAGE_FLAG = True
+MODEL_USAGE_FLAG = False
 
 import torch
 print(torch.cuda.is_available())
@@ -93,7 +93,12 @@ def start_conversation():
 
             start_time = time.time() # time from here
 
-            transcription, language_detected = get_transcription(transcription_model, audio_buffer)
+            if FASTER_WHISPER_FLAG:
+                transcription, language_detected = get_transcription(transcription_model, audio_buffer)
+            
+            else:
+                transcription, language_detected = get_slower_transcription(transcription_model, audio_buffer)
+
 
         else:
             start_time = time.time() # time from here
@@ -101,15 +106,20 @@ def start_conversation():
             language_detected = input(f"Enter language code for default transcription (en, es, pt, fr, de, it, nl): ")
             transcription = DEFAULT_TRANSCRIPTION.get(language_detected, DEFAULT_TRANSCRIPTION['en'])
             
+        
+        if not transcription:
+            speak("I'm not sure I heard anything. Could you please repeat?", 'en')
+            continue
+        
+        # Changing language_detected is
+        if language_detected == 'nn':
+            language_detected = 'en'
+
 
         print("\n** - 👤 Transcription:\n")
         print('\tº', transcription)
 
         print("\n** - Detected language:", language_detected)
-
-        if not transcription:
-            speak("I'm not sure I heard anything. Could you please repeat?", 'en')
-            continue
 
         model_answer = get_answer(transcription, language_detected) if MODEL_USAGE_FLAG else DEFAULT_ANSWERS.get(language_detected, DEFAULT_ANSWERS['en'])
 

@@ -19,7 +19,7 @@ DEFAULT_ANSWERS = {
 }
 
 DEFAULT_GOODBYES = {
-    'en': 'I hope my assistance was helpful, until next time!',
+    'en': 'I hope my assistance was helpful. Until next time!',
     'es': '¡Espero que mi ayuda haya sido útil, hasta la próxima!',
     'pt': 'Espero que a minha assistência tenha sido de utilidade, até a próxima!',
     'fr': "J'espère que mon assistance a été utile. À la prochaine fois!",

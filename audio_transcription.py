@@ -5,10 +5,9 @@ SAMPLE_RATE = 16000
 CHANNELS = 1
 BLOCK_SIZE = 1024
 
-SILENCE_THRESHOLD = 0.01   # lower = more sensitive
-SILENCE_DURATION = 2.0     # seconds of silence to stop
-MAX_RECORD_SECONDS = 25     # safety cap
-# MAX_RECORD_SECONDS = 8     # safety cap
+SILENCE_THRESHOLD = 0.02   # lower = more sensitive
+SILENCE_DURATION = 3.0     # seconds of silence to stop
+MAX_RECORD_SECONDS = 25 if input('\nPresenting on call? (y/n): ').lower() == 'y' else 10    # safety cap
 # ----------------------------------------
 
 
@@ -65,7 +64,7 @@ def get_transcription(model, audio_buffer):
 
     segments, info = model.transcribe(
         audio_np,
-        beam_size=5,            # adjust for speed/quality
+        beam_size=5,
     )
 
     # Build the final text from segments
@@ -87,33 +86,27 @@ def get_transcription(model, audio_buffer):
 
 # Version with Whisper (no faster-whisper)
 
-# def start_recording(model):
+def get_slower_transcription(model, audio_buffer):
 
-#     audio_buffer = record_audio()
+    if not audio_buffer:
+        return None
 
-#     if not audio_buffer:
-#         return None
+    print("** - Concatenating...")
+    audio_np = np.concatenate(audio_buffer, axis=0).flatten()
 
-#     print("** - Concatenating...")
-#     audio_np = np.concatenate(audio_buffer, axis=0).flatten()
+    print("** - Transcribing...")
+    start_time = time.time()
 
-#     print("** - Transcribing...")
-#     start_time = time.time()
+    result = model.transcribe(
+        audio_np,
+        fp16=False
+    )
 
-#     result = model.transcribe(
-#         audio_np,
-#         fp16=False
-#     )
+    end_time = time.time()
+    elapsed_time = end_time - start_time
 
-#     end_time = time.time()
-#     elapsed_time = end_time - start_time
+    print('\n====================')
+    print(f"** - Transcription completed in {elapsed_time:.2f} seconds.")
+    print('====================')
 
-#     print("** - Detected language:", result["language"])
-#     print("\n** - 👤 Transcription:\n")
-#     print('\tº', result["text"])
-
-#     print('\n====================')
-#     print(f"** - Transcription completed in {elapsed_time:.2f} seconds.")
-#     print('====================')
-
-#     return result.get("text", "")
+    return result.get("text", "").strip(), result["language"].lower().strip()

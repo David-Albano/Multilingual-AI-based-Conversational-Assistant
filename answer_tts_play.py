@@ -78,5 +78,7 @@ asyncio.set_event_loop(loop)
 
 
 def speak(text: str, language: str = 'en'):
+    # <<<<****>>>>
+    check_running()
     loop.run_until_complete(speak_streaming(text, language))
 

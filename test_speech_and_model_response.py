@@ -10,7 +10,7 @@ client = get_openai_client()
 
 FASTER_WHISPER_FLAG = True
 TRANSCRIPTION_FLAG = True
-MODEL_USAGE_FLAG = False
+MODEL_USAGE_FLAG = True
 
 import torch
 print(torch.cuda.is_available())
@@ -81,6 +81,9 @@ def get_answer(transcription, language_expected):
         elapsed_time = end_time - start_time
         print(f"** - Response generated in {elapsed_time:.2f} seconds.")
 
+        print("\n** - 🤖 Model Response:\n")
+        print('\tª', response.choices[0].message.content.replace('*', '').strip(), '\n\n')
+
         return response.choices[0].message.content.replace('*', '').strip()
 
     except Exception as e:
@@ -88,78 +91,111 @@ def get_answer(transcription, language_expected):
         return "My apologies, I ran into an error generating a response."
 
 
+def get_transcription_and_lang(audio_buffer):
+    if TRANSCRIPTION_FLAG:
 
-def start_conversation():
-    print("\n\n** - Starting conversation. Press Enter or Ctrl+C to stop.")
-
-    while True:
-        # <<<<****>>>>
-        check_running()
-
-        print('\n==================== ********* ====================\n')
-
-        if TRANSCRIPTION_FLAG:
+        if FASTER_WHISPER_FLAG:
             # <<<<****>>>>
             check_running()
-            audio_buffer = record_audio()
-
-            start_time = time.time() # time from here
-
-            if FASTER_WHISPER_FLAG:
-                # <<<<****>>>>
-                check_running()
-                transcription, language_detected = get_transcription(transcription_model, audio_buffer)
-            
-            else:
-                # <<<<****>>>>
-                check_running()
-                transcription, language_detected = get_slower_transcription(transcription_model, audio_buffer)
-
-
+            transcription, language_detected = get_transcription(transcription_model, audio_buffer)
+        
         else:
-            start_time = time.time() # time from here
-
-            
             # <<<<****>>>>
             check_running()
-            language_detected = input(f"Enter language code for default transcription (en, es, pt, fr, de, it, nl): ")
-            transcription = DEFAULT_TRANSCRIPTION.get(language_detected, DEFAULT_TRANSCRIPTION['en'])
+            transcription, language_detected = get_slower_transcription(transcription_model, audio_buffer)
+
+
+    else:
+        # <<<<****>>>>
+        check_running()
+        language_detected = input(f"Enter language code for default transcription (en, es, pt, fr, de, it, nl): ")
+        transcription = DEFAULT_TRANSCRIPTION.get(language_detected, DEFAULT_TRANSCRIPTION['en'])
+    
+    print("\n** - 👤 Transcription:\n")
+    print('\tº', transcription)
+
+    print("\n** - Detected language:", language_detected)
+
+    return transcription, language_detected
+
+def recording():
+    # <<<<****>>>>
+    check_running()
+
+    if TRANSCRIPTION_FLAG:
+        return record_audio()
+
+    return None
+
+# def start_conversation():
+#     print("\n\n** - Starting conversation. Press Enter or Ctrl+C to stop.")
+
+#     while True:
+#         # <<<<****>>>>
+#         check_running()
+
+#         print('\n==================== ********* ====================\n')
+
+#         if TRANSCRIPTION_FLAG:
+#             audio_buffer = record_audio()
+
+#             start_time = time.time() # time from here
+
+#             if FASTER_WHISPER_FLAG:
+#                 # <<<<****>>>>
+#                 check_running()
+#                 transcription, language_detected = get_transcription(transcription_model, audio_buffer)
+            
+#             else:
+#                 # <<<<****>>>>
+#                 check_running()
+#                 transcription, language_detected = get_slower_transcription(transcription_model, audio_buffer)
+
+
+#         else:
+#             start_time = time.time() # time from here
+
+            
+#             # <<<<****>>>>
+#             check_running()
+#             language_detected = input(f"Enter language code for default transcription (en, es, pt, fr, de, it, nl): ")
+#             transcription = DEFAULT_TRANSCRIPTION.get(language_detected, DEFAULT_TRANSCRIPTION['en'])
             
         
-        if not transcription:
-            # <<<<****>>>>
-            check_running()
-            speak("I'm not sure I heard anything. Could you please repeat?", 'en')
-            continue
+#         if not transcription:
+#             # <<<<****>>>>
+#             check_running()
+#             speak("I'm not sure I heard anything. Could you please repeat?", 'en')
+#             continue
 
 
-        print("\n** - 👤 Transcription:\n")
-        print('\tº', transcription)
+#         print("\n** - 👤 Transcription:\n")
+#         print('\tº', transcription)
 
-        print("\n** - Detected language:", language_detected)
+#         print("\n** - Detected language:", language_detected)
 
         
-        # <<<<****>>>>
-        check_running()
-        model_answer = get_answer(transcription, language_detected) if MODEL_USAGE_FLAG else DEFAULT_ANSWERS.get(language_detected, DEFAULT_ANSWERS['en'])
+#         # <<<<****>>>>
+#         check_running()
+#         model_answer = get_answer(transcription, language_detected) if MODEL_USAGE_FLAG else DEFAULT_ANSWERS.get(language_detected, DEFAULT_ANSWERS['en'])
 
-        end_time = time.time()
+#         end_time = time.time()
 
-        print("\n** - 🤖 Model Response:\n")
-        print('\tª', model_answer, '\n\n')
-        print(f"\n** =====*===== Total processing time from transcription to model response : {end_time - start_time:.2f} seconds =====*=====")
+#         print("\n** - 🤖 Model Response:\n")
+#         print('\tª', model_answer, '\n\n')
+#         print(f"\n** =====*===== Total processing time from transcription to model response : {end_time - start_time:.2f} seconds =====*=====")
 
-        # 🔊 Speak it (blocking by default)
+#         # 🔊 Speak it (blocking by default)
         
-        # <<<<****>>>>
-        check_running()
-        speak(model_answer, language_detected)
+#         # <<<<****>>>>
+#         check_running()
+#         speak(model_answer, language_detected)
 
-        # user_input = input("\nPress Enter to continue... type 'quit' to end conversation: ")
+#         # user_input = input("\nPress Enter to continue... type 'quit' to end conversation: ")
 
-        # if user_input.lower() in ['quit', 'q', 'exit', 'stop'] or user_input != '':
-        #     speak(DEFAULT_GOODBYES.get(language_detected, DEFAULT_GOODBYES['en']), language_detected)
-        #     break
+#         # if user_input.lower() in ['quit', 'q', 'exit', 'stop'] or user_input != '':
+#         #     speak(DEFAULT_GOODBYES.get(language_detected, DEFAULT_GOODBYES['en']), language_detected)
+#         #     break
 
 
 # if __name__ == "__main__":

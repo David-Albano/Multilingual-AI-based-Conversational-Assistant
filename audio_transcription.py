@@ -1,4 +1,5 @@
 import time, numpy as np, sounddevice as sd
+from check_running import check_running
 
 # ---------------- CONFIG ----------------
 SAMPLE_RATE = 16000
@@ -26,6 +27,9 @@ def record_audio():
         print("\n** - Recording...\n")
 
         while True:
+            # <<<<****>>>>
+            check_running()
+            
             audio, _ = stream.read(BLOCK_SIZE)
             audio_buffer.append(audio)
 
@@ -55,23 +59,40 @@ def get_transcription(model, audio_buffer):
 
     if not audio_buffer:
         return None
+    
+    
+    # <<<<****>>>>
+    check_running()
 
     print("** - Concatenating...")
     audio_np = np.concatenate(audio_buffer, axis=0).flatten()
 
+    # <<<<****>>>>
+    check_running()
+
     print("** - Transcribing...")
     start_time = time.time()
+
+    # <<<<****>>>>
+    check_running()
 
     segments, info = model.transcribe(
         audio_np,
         beam_size=5,
     )
 
+    # <<<<****>>>>
+    check_running()
+
     # Build the final text from segments
     text_parts = []
     for segment in segments:
         text_parts.append(segment.text)
+
     full_text = " ".join(text_parts).strip()
+
+    # <<<<****>>>>
+    check_running()
 
     end_time = time.time()
     elapsed_time = end_time - start_time

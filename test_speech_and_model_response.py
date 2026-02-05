@@ -1,5 +1,6 @@
-import time, whisper
+import time, whisper, streamlit as st
 from audio_transcription import record_audio, get_transcription, get_slower_transcription
+from check_running import check_running
 from load_env import get_openai_client
 from answer_tts_play import speak
 from faster_whisper import WhisperModel
@@ -50,6 +51,9 @@ def get_answer(transcription, language_expected):
     try:
         start_time = time.time()
 
+        # <<<<****>>>>
+        check_running()
+
         response = client.chat.completions.create(
             # model='gpt-4.1-nano',
             model='gpt-4o',
@@ -70,6 +74,9 @@ def get_answer(transcription, language_expected):
             ]
         )
 
+        # <<<<****>>>>
+        check_running()
+
         end_time = time.time()
         elapsed_time = end_time - start_time
         print(f"** - Response generated in {elapsed_time:.2f} seconds.")
@@ -86,34 +93,44 @@ def start_conversation():
     print("\n\n** - Starting conversation. Press Enter or Ctrl+C to stop.")
 
     while True:
+        # <<<<****>>>>
+        check_running()
+
         print('\n==================== ********* ====================\n')
 
         if TRANSCRIPTION_FLAG:
+            # <<<<****>>>>
+            check_running()
             audio_buffer = record_audio()
 
             start_time = time.time() # time from here
 
             if FASTER_WHISPER_FLAG:
+                # <<<<****>>>>
+                check_running()
                 transcription, language_detected = get_transcription(transcription_model, audio_buffer)
             
             else:
+                # <<<<****>>>>
+                check_running()
                 transcription, language_detected = get_slower_transcription(transcription_model, audio_buffer)
 
 
         else:
             start_time = time.time() # time from here
 
+            
+            # <<<<****>>>>
+            check_running()
             language_detected = input(f"Enter language code for default transcription (en, es, pt, fr, de, it, nl): ")
             transcription = DEFAULT_TRANSCRIPTION.get(language_detected, DEFAULT_TRANSCRIPTION['en'])
             
         
         if not transcription:
+            # <<<<****>>>>
+            check_running()
             speak("I'm not sure I heard anything. Could you please repeat?", 'en')
             continue
-        
-        # Changing language_detected is
-        if language_detected == 'nn':
-            language_detected = 'en'
 
 
         print("\n** - 👤 Transcription:\n")
@@ -121,6 +138,9 @@ def start_conversation():
 
         print("\n** - Detected language:", language_detected)
 
+        
+        # <<<<****>>>>
+        check_running()
         model_answer = get_answer(transcription, language_detected) if MODEL_USAGE_FLAG else DEFAULT_ANSWERS.get(language_detected, DEFAULT_ANSWERS['en'])
 
         end_time = time.time()
@@ -130,15 +150,18 @@ def start_conversation():
         print(f"\n** =====*===== Total processing time from transcription to model response : {end_time - start_time:.2f} seconds =====*=====")
 
         # 🔊 Speak it (blocking by default)
+        
+        # <<<<****>>>>
+        check_running()
         speak(model_answer, language_detected)
 
-        user_input = input("\nPress Enter to continue... type 'quit' to end conversation: ")
+        # user_input = input("\nPress Enter to continue... type 'quit' to end conversation: ")
 
-        if user_input.lower() in ['quit', 'q', 'exit', 'stop'] or user_input != '':
-            speak(DEFAULT_GOODBYES.get(language_detected, DEFAULT_GOODBYES['en']), language_detected)
-            break
+        # if user_input.lower() in ['quit', 'q', 'exit', 'stop'] or user_input != '':
+        #     speak(DEFAULT_GOODBYES.get(language_detected, DEFAULT_GOODBYES['en']), language_detected)
+        #     break
 
 
-if __name__ == "__main__":
-    print("Starting recording and transcription...")
-    start_conversation()
+# if __name__ == "__main__":
+#     print("Starting recording and transcription...")
+#     start_conversation()

@@ -4,6 +4,7 @@ import sounddevice as sd
 import numpy as np
 import subprocess
 from settings import VOICE_LANG_MAP
+from check_running import check_running
 
 
 SAMPLE_RATE = 24000  # edge-tts default
@@ -12,12 +13,19 @@ DTYPE = "float32"
 
 
 async def speak_streaming(text: str, language: str = 'en'):
+
     voice_language = VOICE_LANG_MAP.get(language, VOICE_LANG_MAP['en'])  # default to English if not found
+
+    # <<<<****>>>>
+    check_running()
 
     communicate = edge_tts.Communicate(
         text,
         voice_language
     )
+
+    # <<<<****>>>>
+    check_running()
 
     # ffmpeg process: MP3 → raw float32 PCM
     ffmpeg = subprocess.Popen(
@@ -34,6 +42,9 @@ async def speak_streaming(text: str, language: str = 'en'):
         stdout=subprocess.PIPE,
     )
 
+    # <<<<****>>>>
+    check_running()
+
     def audio_callback(outdata, frames, time, status):
         data = ffmpeg.stdout.read(frames * 4)  # 4 bytes per float32
         if not data:
@@ -49,6 +60,9 @@ async def speak_streaming(text: str, language: str = 'en'):
         callback=audio_callback,
     ):
         async for chunk in communicate.stream():
+            # <<<<****>>>>
+            check_running()
+
             if chunk["type"] == "audio":
                 ffmpeg.stdin.write(chunk["data"])
 

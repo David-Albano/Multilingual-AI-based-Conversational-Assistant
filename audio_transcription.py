@@ -7,7 +7,7 @@ CHANNELS = 1
 BLOCK_SIZE = 1024
 
 SILENCE_THRESHOLD = 0.02   # lower = more sensitive
-SILENCE_DURATION = 3.0     # seconds of silence to stop
+SILENCE_DURATION = 2.0     # seconds of silence to stop
 MAX_RECORD_SECONDS = 25 if input('\nPresenting on call? (y/n): ').lower() == 'y' else 10    # safety cap
 # ----------------------------------------
 

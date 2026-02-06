@@ -91,7 +91,7 @@ st.markdown(
                 justify-content: center;
                 align-items: center;
                 font-family: Arial;
-                font-size: 48px;
+                font-size: 45px;
                 border: none;
                 border-radius: 15px;
                 padding-top: 1rem;
@@ -101,7 +101,7 @@ st.markdown(
                 box-shadow: rgba(0, 0, 0, 0.1) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.1) 0px 18px 36px -18px inset;
             '
         >
-            <p style='color:#f1f1f1;' >Ambrósio</p>
+            <p style='color:#f1f1f1;font-weight: bold;' >Ambrósio</p>
             <p
                 style='
                     font-size: 52px;
